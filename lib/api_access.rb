@@ -1,28 +1,29 @@
-require "api_access/version"
 require 'net/http'
 require 'net/https'
 require 'uri'
+require 'json'
+
+# require "api_access/version"
 
 class ApiAccess
   class << self
-    def get(url, get_params)
+    def get(url, get_params = {})
       request(url,get_params,'get')
     end
 
-    def post(url, post_params)
+    def post(url, post_params = {})
       request(url,post_params,'post')
     end
 
     # assume get json data
     def request(url,request_params,method = 'get')
       uri = URI(url)
-      http = Net::HTTP.new(uri.host,uri.port)
-      http.use_ssl = (uri.scheme == 'https')
+      klass = (uri.scheme == 'https' ? Net::HTTPS : Net::HTTP)
       if method == 'get'
-        query = URI.encode_www_form(request_params)
-        response = http.get("#{uri.path}?#{query}")
+        uri.query = (uri.query.nil? : '' ? (uri.query + "&")) + URI.encode_www_form(request_params)
+        response = klass.get_response(uri)
       else
-        response = http.post(uri.path,URI.encode_www_form(request_params))
+        response = klass.post_form(uri, request_params)
       end
       if response.kind_of? Net::HTTPSuccess
         JSON.parse(response.body)
