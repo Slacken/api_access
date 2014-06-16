@@ -1,6 +1,6 @@
 # ApiAccess
 
-TODO: Write a gem description
+A Ruby gem and a simple wrapper for HTTP GET and POST
 
 ## Installation
 
@@ -18,11 +18,11 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+`ApiAccess.getJSON('http://example.com/url', {q: 1})`, `ApiAccess.get` is an alias method of `ApiAccess.getJSON`
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/api_access/fork )
+1. Fork it ( https://github.com/Slacken/api_access/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
