@@ -7,16 +7,18 @@ require 'json'
 
 class ApiAccess
   class << self
-    def get(url, get_params = {})
-      request(url,get_params,'get')
+    %w{get post}.each do |method|
+      %w{JSON XML}.each do |format|
+        define_method "#{method}#{format}", ->(url, params={}) do
+          request(url,params, method, format)
+        end
+      end
+      alias_method method, "#{method}JSON"
     end
 
-    def post(url, post_params = {})
-      request(url,post_params,'post')
-    end
 
-    # assume get json data
-    def request(url,request_params,method = 'get')
+    private
+    def request(url,request_params,method = 'get', format = nil)
       uri = URI(url)
       klass = (uri.scheme == 'https' ? Net::HTTPS : Net::HTTP)
       if method == 'get'
@@ -26,7 +28,7 @@ class ApiAccess
         response = klass.post_form(uri, request_params)
       end
       if response.kind_of? Net::HTTPSuccess
-        JSON.parse(response.body)
+        format == 'JSON' ? JSON.parse(response.body) : response.body
       else
         nil
       end
