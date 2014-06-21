@@ -44,7 +44,7 @@ class ApiAccess
         response = klass.post_form(uri, request_params)
       end
       if response.kind_of? Net::HTTPSuccess
-        format == 'JSON' ? JSON.parse(response.body) : response.body
+        format == 'json' ? JSON.parse(response.body) : response.body
       else
         nil
       end
