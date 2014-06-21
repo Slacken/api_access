@@ -37,12 +37,18 @@ class ApiAccess
     def request(url,request_params,method = 'get', format = nil)
       uri = URI(url)
       klass = (uri.scheme == 'https' ? Net::HTTPS : Net::HTTP)
-      if method == 'get'
-        uri.query = (uri.query.nil? ? '' : (uri.query + "&")) + URI.encode_www_form(request_params)
-        response = klass.get_response(uri)
-      else
-        response = klass.post_form(uri, request_params)
+      begin
+        if method == 'get'
+          uri.query = (uri.query.nil? ? '' : (uri.query + "&")) + URI.encode_www_form(request_params)
+          response = klass.get_response(uri)
+        else
+          response = klass.post_form(uri, request_params)
+        end
+      rescue Exception => e
+        puts e.message
+        return nil
       end
+      
       if response.kind_of? Net::HTTPSuccess
         format == 'json' ? JSON.parse(response.body) : response.body
       else
