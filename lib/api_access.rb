@@ -13,18 +13,34 @@ class ApiAccess
           request(url,params, method, format)
         end
 
-        define_method "batch_#{method}_#{format}", ->(url, key_params, cocurrence = 10) do
+        define_method "batch_#{method}_#{format}", ->(urls, key_params, cocurrence = 10) do
           values = {}
-          key_params.each_slice(cocurrence){ |group|
-            threads = {}
-            group.each do |key, params| # [key] array or key=> params hash
-              params = {} if params.nil?
-              threads[key] = Thread.new(params) do |param|
-                request(url, param, method, format)
+          # two kind of batching: one url with many params
+          if urls.is_a? String
+            url = urls
+            key_params.each_slice(cocurrence){ |group|
+              threads = {}
+              group.each do |key, params| # [key] array or key=> params hash
+                params = {} if params.nil?
+                threads[key] = Thread.new(params) do |param|
+                  request(url, param, method, format)
+                end
+                threads.each_pair{|k, thread| values[k] = thread.value}
               end
-              threads.each_pair{|k, thread| values[k] = thread.value}
-            end
-          }
+            }
+          # and, many urls with one param
+          else
+            params = key_params || {}
+            urls.each_slice(cocurrence){|group|
+              threads = {}
+              group.each do |key, url|
+                threads[key] = Thread.new(params) do |param|
+                  request(url, param, method, format)
+                end
+                threads.each_pair{|k, thread| values[k] = thread.value}
+              end
+            }
+          end
           values
         end
       end
